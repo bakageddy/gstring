@@ -1,2 +1,2 @@
 CC=clang
-CFLAGS=-std=c17 -pedantic -Wall -Wextra
+CFLAGS=-std=c2x -pedantic -Wall -Wextra -ggdb
