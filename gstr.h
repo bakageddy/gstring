@@ -10,6 +10,7 @@
 #endif // !GSTRING_MINIMUM_CAPACITY
 
 #include <stddef.h>
+#include <stdbool.h>
 
 typedef enum {
 	SOME,
@@ -32,6 +33,8 @@ typedef struct {
 	size_t len;
 } gsv;
 
+#define GSV_FMT "%.*s"
+#define GSV_ARG(x) (int) (x).len, (x).content
 
 gstr gstr_new(void);
 void gstr_clear(gstr *s);
@@ -40,6 +43,11 @@ int gstr_append(gstr *s, char c);
 opt_char gstr_pop(gstr *s);
 int gstr_remove(gstr *s, size_t idx);
 gstr gstr_from_lit(const char *array, size_t len);
+
+bool gsv_eq(gsv a, gsv b);
+bool gsv_starts_with(gsv view, gsv needle);
+
+gsv gstr_view(const gstr *s, const size_t start, const size_t len);
 
 #define gstr_from_static(cstr) gstr_from_lit(cstr, sizeof(cstr) - 1)
 
@@ -150,7 +158,7 @@ int gstr_remove(gstr *s, size_t idx) {
 	return 0;
 }
 
-[[nodiscard]] opt_char gstr_pop(gstr *s) {
+opt_char gstr_pop(gstr *s) {
 	if (s -> len == 0) {
 		return (opt_char) {
 			.t = NONE,
@@ -173,6 +181,34 @@ int gstr_remove(gstr *s, size_t idx) {
 		.t = SOME,
 		.c = popped,
 	};
+}
+
+
+gsv gsv_new(void) {
+	return (gsv) {
+		.content = NULL,
+		.len = 0,
+	};
+}
+
+gsv gstr_view(const gstr *s, const size_t start, const size_t len) {
+	if (start < 0 || start + len > s -> len) {
+		return gsv_new();
+	}
+	gsv view = gsv_new();
+	view.content = s -> content + start;
+	view.len = len;
+	return view;
+}
+
+bool gsv_eq(gsv a, gsv b) {
+	if (a.len != b.len) return false;
+	if (*a.content != *b.content) return false;
+	return memcmp(a.content, b.content, a.len) == 0;
+}
+
+bool gsv_starts_with(gsv view, gsv needle) {
+	return memcmp(view.content, needle.content, needle.len) == 0;
 }
 
 void gstr_clear(gstr *s) {

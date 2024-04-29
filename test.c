@@ -118,13 +118,38 @@ int test_clear(void) {
 	return 1;
 }
 
+void test_gsv_starts_with(void) {
+	gstr s1 = gstr_from_static("Dinesh Kumar\n");
+	gstr s2 = gstr_from_static("Din");
+
+	assert(gsv_starts_with(*(gsv *) &s1, *(gsv *) &s2) == true 
+			&& "Error does not start with");
+	assert(gsv_starts_with(*(gsv *) &s2, *(gsv *) &s1) == false);
+
+	gstr_del(&s1);
+	gstr_del(&s2);
+}
+
+int test_view(void) {
+	gstr s = gstr_from_static("Dinesh Kumar");
+
+	gsv view = gstr_view(&s, 0, s.len);
+	assert(memcmp(view.content, s.content, s.len) == 0);
+	printf("View: "GSV_FMT"\n", GSV_ARG(view));
+	gstr_del(&s);
+	return 0;
+}
+
 int main(void) {
 	test_constructor();
 	test_static_constructor();
 	test_insert();
 	test_clear();
-	// test_append();
-	// test_pop();
-	// test_remove();
+	test_view();
+	test_append();
+	test_pop();
+	test_remove();
+	test_gsv_starts_with();
+
 	return 0;
 }
